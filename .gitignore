@@ -1,0 +1,14 @@
+# Ignore the "build" folder
+scripts/__pycache__
+
+# Ignore specific files
+#config.ini
+#*.log
+
+.DS_Store
+scripts/.DS_Store
+
+
+# Ignore all files with a certain extension
+*.h5
+
