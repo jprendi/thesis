@@ -12,13 +12,16 @@ def load_dataset(dataset, key):
     return datss.reshape(len(datss), 99)
 
 
-def create_xtrain_xtest():
+def create_xtrain_xtest(random_seed=1):
     datt = load_dataset('NuGun_preprocessed.h5', 'full_data_cyl')
-    x_train ,x_test = sklearn.model_selection.train_test_split(datt)
+    x_train ,x_test = sklearn.model_selection.train_test_split(datt, random_state=random_seed)
     return x_train, x_test
 
 
-def inject_signal(bkg, sig, size, percentage):
+def inject_signal(bkg, sig, size, percentage, random_seed=1):
+    
+    random.seed(random_seed)
+
     dim1 = np.shape(bkg)
     dim2 = np.shape(sig)
     
@@ -39,4 +42,4 @@ def inject_signal(bkg, sig, size, percentage):
     labels = np.concatenate((np.zeros(size1),np.ones(size2)))
     new_dataset = np.concatenate((newdat1, newdat2))
 
-    return new_dataset, labels, newdat1, newdat2, size1, size2
+    return new_dataset, labels, (newdat1, newdat2), (size1, size2)
