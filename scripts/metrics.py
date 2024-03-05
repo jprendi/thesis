@@ -4,6 +4,7 @@ from sklearn.metrics import roc_curve, auc
 import numpy as np
 import pickle
 import os
+from isotree import IsolationForest
 
 def plot_roc(FPR, TPR, AUC):
     plt.figure(figsize=(5, 4))

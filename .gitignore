@@ -12,3 +12,4 @@ scripts/.DS_Store
 # Ignore all files with a certain extension
 *.h5
 
+trained_models/
