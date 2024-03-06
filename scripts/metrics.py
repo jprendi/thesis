@@ -62,7 +62,7 @@ def get_seed_uncertainty(kwargs, x_test, signal):
     tprs = {}
     aucs = {}
     for i in range(len(model_names)):
-        fprs[i], tprs[i], aucs[i] = metrics.predict_value(model=model_names[i], x_test=x_test, signal=signal)
+        fprs[i], tprs[i], aucs[i] = predict_value(model=model_names[i], x_test=x_test, signal=signal)
 
     # interpolate
 
