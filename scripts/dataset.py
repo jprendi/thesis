@@ -1,8 +1,7 @@
 import h5py
-import sklearn.model_selection
 import random
 import numpy as np
-
+from sklearn.model_selection import train_test_split
 
 
 def load_dataset(dataset, key):
@@ -14,7 +13,7 @@ def load_dataset(dataset, key):
 
 def create_xtrain_xtest(random_seed=1, background_data='NuGun_preprocessed.h5', bkg_key='full_data_cyl'):
     datt = load_dataset(background_data, bkg_key)
-    x_train ,x_test = sklearn.model_selection.train_test_split(datt, random_state=random_seed)
+    x_train ,x_test = train_test_split(datt, random_state=random_seed)
     return x_train, x_test
 
 
