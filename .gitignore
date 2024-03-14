@@ -13,4 +13,4 @@ scripts/.DS_Store
 *.h5
 
 trained_models/
-fivefold_scoringmetric_GluGluHtoTauTau_scan.pkl
+fivefold_scoringmerticscan_values/
