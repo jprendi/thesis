@@ -89,5 +89,16 @@ class Cross_Validation:
         auc_unc = np.std(list(aucs.values()))
 
         return mean_curve, error_curve, base, auc_mean, auc_unc
+
+    def get_model_name(self):#, kfold=False, k="all"):
+        model_names = "trained_models/model__" + "__".join([f"{key}_{value}" for key, value in self.kwargs.items()])+"__fold_"+"*"
+        return glob.glob(model_names)
+        # if kfold==True and k="all":
+        #     return "trained_models/model__" + "__".join([f"{key}_{value}" for key, value in self.kwargs.items()])+"__fold_+"*""     #  f"__fold_{self.fold+1}_of_{self.k}"
+        # elif kfold ==True:
+        #     return "trained_models/model__" + "__".join([f"{key}_{value}" for key, value in self.kwargs.items()])+ f"__fold_{k}_of_{self.k}"
+        # else:
+        #     return "trained_models/model__" + "__".join([f"{key}_{value}" for key, value in self.kwargs.items()])+"*"
+
         
 
