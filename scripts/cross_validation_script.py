@@ -18,6 +18,7 @@ class Cross_Validation:
         self.train_indices = 0
         self.test_indices = 0 
         self.fold = 0
+        self.cross_val_splits()
         if train_models == True:
             self.train_k_models()
 
