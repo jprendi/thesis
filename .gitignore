@@ -14,3 +14,8 @@ scripts/.DS_Store
 
 trained_models/
 fivefold_scoringmerticscan_values/
+
+model_1/
+model_1_old/
+
+stuff/__pycache__

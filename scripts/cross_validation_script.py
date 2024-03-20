@@ -19,6 +19,7 @@ class Cross_Validation:
         self.test_indices = 0 
         self.fold = 0
         self.cross_val_splits()
+        self.models = self.get_model_name()
         if train_models == True:
             self.train_k_models()
 
@@ -56,6 +57,8 @@ class Cross_Validation:
             self.train_and_save_model()
    
     def predict_value(self, model, output1="score"): #works!  # maybe need to indicate which fold we're at ????
+
+        #if len(models) = 
         loaded_model = pickle.load(open(model, 'rb'))
         x_test, labels = self.get_testset_labels()
         score_x_test = loaded_model.predict(x_test, output=output1)
@@ -92,8 +95,8 @@ class Cross_Validation:
         return mean_curve, error_curve, base, auc_mean, auc_unc
 
     def get_model_name(self):#, kfold=False, k="all"):
-        model_names = "trained_models/model__" + "__".join([f"{key}_{value}" for key, value in self.kwargs.items()])+"__fold_"+"*"
-        return glob.glob(model_names)
+        model_names = "trained_models/model__" + "__".join([f"{key}_{value}" for key, value in self.kwargs.items()])+"_*"+"fold"+"*"
+        return list(glob.glob(model_names))
         # if kfold==True and k="all":
         #     return "trained_models/model__" + "__".join([f"{key}_{value}" for key, value in self.kwargs.items()])+"__fold_+"*""     #  f"__fold_{self.fold+1}_of_{self.k}"
         # elif kfold ==True:
