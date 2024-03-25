@@ -41,7 +41,7 @@ class Cross_Validation:
     
     def train_and_save_model(self):  #works!
     # kwargs argument is a dictionary
-        model_string = "trained_models/model__" + "__".join([f"{key}_{value}" for key, value in self.kwargs.items()])+ f"__fold_{self.fold+1}_of_{self.k}" # this line is thanks to chatgpt
+        model_string = "trained_models/isotree/kfold_models/model__" + "__".join([f"{key}_{value}" for key, value in self.kwargs.items()])+ f"__fold_{self.fold+1}_of_{self.k}" # this line is thanks to chatgpt
         x_train = self.get_trainset()
         if os.path.isfile(model_string)==True:
             print(f"This model already exists: {model_string}.")
@@ -68,7 +68,7 @@ class Cross_Validation:
 
     def get_kfold_uncertainty(self):#(kwargs, x_test, signal):
         # here we assume that we have already trained the models :-)
-        model_string = "trained_models/model__" + "__".join([f"{key}_{value}" for key, value in self.kwargs.items()])+"*"
+        model_string = "trained_models/isotree/kfold_models/model__" + "__".join([f"{key}_{value}" for key, value in self.kwargs.items()])+"*"
         model_names = glob.glob(model_string)
         fprs = {}
         tprs = {}
@@ -95,14 +95,11 @@ class Cross_Validation:
         return mean_curve, error_curve, base, auc_mean, auc_unc
 
     def get_model_name(self):#, kfold=False, k="all"):
-        model_names = "trained_models/model__" + "__".join([f"{key}_{value}" for key, value in self.kwargs.items()])+"_*"+"fold"+"*"
+        model_names = "trained_models/isotree/kfold_models/model__" + "__".join([f"{key}_{value}" for key, value in self.kwargs.items()])+"_*"+"fold"+"*"
         return list(glob.glob(model_names))
         # if kfold==True and k="all":
-        #     return "trained_models/model__" + "__".join([f"{key}_{value}" for key, value in self.kwargs.items()])+"__fold_+"*""     #  f"__fold_{self.fold+1}_of_{self.k}"
+        #     return "trained_models/isotree/kfold_models/model__" + "__".join([f"{key}_{value}" for key, value in self.kwargs.items()])+"__fold_+"*""     #  f"__fold_{self.fold+1}_of_{self.k}"
         # elif kfold ==True:
-        #     return "trained_models/model__" + "__".join([f"{key}_{value}" for key, value in self.kwargs.items()])+ f"__fold_{k}_of_{self.k}"
+        #     return "trained_models/isotree/kfold_models/model__" + "__".join([f"{key}_{value}" for key, value in self.kwargs.items()])+ f"__fold_{k}_of_{self.k}"
         # else:
-        #     return "trained_models/model__" + "__".join([f"{key}_{value}" for key, value in self.kwargs.items()])+"*"
-
-        
-
+        #     return "trained_models/isotree/kfold_models/model__" + "__".join([f"{key}_{value}" for key, value in self.kwargs.items()])+"*"

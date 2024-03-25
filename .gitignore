@@ -1,22 +1,14 @@
-# Ignore the "build" folder
 scripts/__pycache__
-
-# Ignore specific files
-#config.ini
-#*.log
+stuff/__pycache__
 
 .DS_Store
 scripts/.DS_Store
-
 
 # Ignore all files with a certain extension
 *.h5
 
 trained_models/
-fivefold_scoringmerticscan_values/
+results/
 
-model_1/
-model_1_old/
-model_2/
 
-stuff/__pycache__
+playground/
