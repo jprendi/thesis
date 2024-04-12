@@ -94,6 +94,7 @@ class Cross_Validation:
             model = pickle.load(open(model_string, 'rb'))
             x_test = self.get_teststet_bkgonly()
             self.x_test_predict[i] = model.predict(x_test, output="score")
+            print(len(self.x_test_predict))
 
     def get_predictions(self, model, i):
         """
