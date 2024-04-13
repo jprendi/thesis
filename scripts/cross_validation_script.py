@@ -3,7 +3,8 @@ this class is to help perform the whole cross validation task! :)
 it trains your k models and then evaluates the uncertainty of the model with the means of ROC-AUC and PR-AUC!
 """
 
-from scripts import dataset
+# from scripts import dataset
+import dataset
 from sklearn.metrics import roc_curve, auc, precision_recall_curve
 from sklearn.model_selection import KFold
 import numpy as np

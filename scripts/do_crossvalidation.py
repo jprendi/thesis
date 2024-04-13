@@ -21,6 +21,8 @@ If it works out, one could theoretically put e.g. "nthreads": 10 within the kwar
 """
 
 import cross_validation_script
+import pickle
+import pandas as pd
 
 kwargs = {"ntrees":100, "scoring_metric": "depth"}
 sigkeys = ["ttHto2B", "VBFHToInvisible", "GluGluHToGG_M-90", "HTo2LongLivedTo4b_MH-125_MFF-12_CTau-900mm", "ggXToYYTo2Mu2E_m18", "GluGluHToTauTau", "SMS-Higgsino", "SUSYGluGluToBBHToBB_NarrowWidth_M-120"]
@@ -44,3 +46,5 @@ for sigkey in sigkeys:
         # print(results)
         ll = [sigkey, scoring_metric, results_dict["ROCAUC"]["auc_mean"], results_dict["ROCAUC"]["auc_unc"], results_dict["PRAUC"]["pr_auc_mean"], results_dict["PRAUC"]["pr_auc_unc"]]
         results_table.append(ll)
+
+pd.DataFrame(results_table, columns =['signal', 'scoring metric', 'rocauc', 'rocauc unc', 'prauc', 'prauc unc']).to_csv(path_or_buf="results/isotree/kfold_models/results_kfold.csv")
