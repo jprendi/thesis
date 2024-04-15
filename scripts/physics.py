@@ -3,10 +3,19 @@ import math
 import numpy as np
 
 def inv_mass_indv(entry_data, type_entry):
+    """
+    Calculate the invariant mass for individual particles.
+
+    Parameters:
+        entry_data (numpy.ndarray): Array containing the data of the particle.
+        type_entry (tuple): Tuple containing the indices of the PT values for two particles.
+
+    Returns:
+        float or None: The invariant mass if both PT values are non-zero, otherwise None.
+    """
 
     # we assume E >> m
     # so we define the invariant mass as followed :
-    
 
     pt1entry, pt2entry = type_entry
     pt1 = entry_data[pt1entry]
@@ -26,6 +35,16 @@ def inv_mass_indv(entry_data, type_entry):
 # due to it being L1 data!
     
 def invariant_mass(dataset, type):
+    """
+    Calculate the invariant mass for particles of a specific type in the dataset.
+
+    Parameters:
+        dataset (list of numpy.ndarray): List containing arrays of particle data.
+        type (str): The type of particles ('jet', 'muon', or 'egamma').
+
+    Returns:
+        list: List of invariant mass values for the specified type of particles.
+    """
     result_list = []
     if type == 'jet':
         type_entry = (63, 66)

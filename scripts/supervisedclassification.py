@@ -21,8 +21,20 @@ from sklearn.metrics import roc_curve, auc, precision_recall_curve
 ## most of this code is borrowed from the hls4ml tutorial :)
 
 class SupervisedClassifier():
+    """
+    A class for training and evaluating a supervised classifier.
+    """
 
     def __init__(self, signal, random_seed=1, train=True):
+        """
+        Initialize the SupervisedClassifier instance.
+
+        Parameters:
+            signal (str): The key for the signal dataset.
+            random_seed (int): Random seed for reproducibility.
+            train (bool): Whether to train a new model or load an existing one.
+        """
+
         self.sig_key = signal
         self.X_train_val, self.X_test, self.y_train_val, self.y_test  = dataset.supervised_xtrain_xtest(sig_key=signal)
         self.seed = random_seed
@@ -38,6 +50,10 @@ class SupervisedClassifier():
 
 
     def architecture(self):
+        """
+        Define the architecture of the neural network model.
+        """
+
         model = Sequential()
         model.add(Dense(64, input_shape=(99,), name='fc1', kernel_initializer='lecun_uniform', kernel_regularizer=l1(0.0001)))
         model.add(Activation(activation='relu', name='relu1'))
@@ -51,6 +67,9 @@ class SupervisedClassifier():
 
     
     def train_model(self):
+        """
+        Train the neural network model.
+        """
         adam = Adam(lr=0.0001)
         self.model.compile(optimizer=adam, loss=['categorical_crossentropy'], metrics=['accuracy'])
         callbacks = all_callbacks(
@@ -73,6 +92,9 @@ class SupervisedClassifier():
         )
 
     def predict_and_save(self):
+        """
+        Predict using the trained model and save the results.
+        """
         results_dict = {}
         y_keras = self.model.predict(self.X_test)
         
