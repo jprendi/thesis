@@ -1,5 +1,5 @@
 import pickle
-import numpy
+import numpy as np
 import matplotlib.pyplot as plt
 
 
@@ -18,7 +18,7 @@ def plot_single_funcs(sig_key, scoring_metric, baseline_pr_sup, baseline_if_sup)
     plt.ylabel('True Positive Rate',fontsize=13)
     plt.semilogx()
     plt.semilogy()
-    plt.plot(results_dict_sup["FPR"], results_dict_sup["TPR"], lw=2, label=f'supervised classifier {sig_key} (AUC = %.1f%%)' % (results_dict_sup["AUC"]* 100))
+    plt.plot(results_dict_sup["FPR"], results_dict_sup["TPR"], lw=2, label=f'supervised classifier {sig_key} (AUC = %.01f%%)' % (results_dict_sup["AUC"]* 100))
     plt.legend(loc='lower right',fontsize=13)
     plt.tight_layout()
     plt.savefig(f"scans/supervised_classifier/{sig_key}_classifier_auroc")
@@ -30,7 +30,7 @@ def plot_single_funcs(sig_key, scoring_metric, baseline_pr_sup, baseline_if_sup)
     plt.axhline(baseline_pr_sup, color='red', linestyle='dashed', linewidth=1, label="baseline") # threshold value for measuring anomaly detection efficiency
     plt.xlabel('Recall',fontsize=13)
     plt.ylabel('Precision',fontsize=13)
-    plt.plot(results_dict_sup["recall"], results_dict_sup["precision"], lw=2, label=f'supervised classifier {sig_key} (AUC = %.1f%%)' % (results_dict_sup["PR_AUC"]* 100))
+    plt.plot(results_dict_sup["recall"], results_dict_sup["precision"], lw=2, label=f'supervised classifier {sig_key} (AUC = %.01f%%)' % (results_dict_sup["PR_AUC"]* 100))
     plt.legend(loc='lower right',fontsize=13)
     plt.tight_layout()
     plt.savefig(f"scans/supervised_classifier/{sig_key}_classifier_prauc")
@@ -52,7 +52,7 @@ def plot_single_funcs(sig_key, scoring_metric, baseline_pr_sup, baseline_if_sup)
     plt.ylabel('True Positive Rate',fontsize=13)
     plt.semilogx()
     plt.semilogy()
-    plt.plot(results_dict_iso["ROCAUC"]["base"], results_dict_iso["ROCAUC"]["mean_curve"], lw=2, label = f'iForest {sig_key} {scoring_metric} (AUC = %.1f%% ± %.1f%%)' % (results_dict_iso["ROCAUC"]["auc_mean"] * 100, results_dict_iso["ROCAUC"]['auc_unc'] * 100))
+    plt.plot(results_dict_iso["ROCAUC"]["base"], results_dict_iso["ROCAUC"]["mean_curve"], lw=2, label = f'iForest {sig_key} {scoring_metric} (AUC = %.01f%% ± %.01f%%)' % (results_dict_iso["ROCAUC"]["auc_mean"] * 100, results_dict_iso["ROCAUC"]['auc_unc'] * 100))
 
     plt.fill_between(results_dict_iso["ROCAUC"]["base"],
                     results_dict_iso["ROCAUC"]["mean_curve"] - results_dict_iso["ROCAUC"]["error_curve"]
@@ -76,7 +76,7 @@ def plot_single_funcs(sig_key, scoring_metric, baseline_pr_sup, baseline_if_sup)
     plt.axhline(baseline_if_sup, color='red', linestyle='dashed', linewidth=1, label="baseline") # threshold value for measuring anomaly detection efficiency
 
 
-    plt.plot(results_dict_iso["PRAUC"]["interp_recall"], results_dict_iso["PRAUC"]["mean_precision"], lw=1, label = f'iForest {sig_key} {scoring_metric} (AUC = %.1f%% ± %.1f%%)' % (results_dict_iso["PRAUC"]["pr_auc_mean"] * 100, results_dict_iso["PRAUC"]['pr_auc_unc'] * 100))
+    plt.plot(results_dict_iso["PRAUC"]["interp_recall"], results_dict_iso["PRAUC"]["mean_precision"], lw=1, label = f'iForest {sig_key} {scoring_metric} (AUC = %.01f%% ± %.01f%%)' % (results_dict_iso["PRAUC"]["pr_auc_mean"] * 100, results_dict_iso["PRAUC"]['pr_auc_unc'] * 100))
 
     plt.fill_between(results_dict_iso["PRAUC"]["interp_recall"],
                     results_dict_iso["PRAUC"]["mean_precision"] - results_dict_iso["PRAUC"]["error_precision"]
@@ -101,6 +101,40 @@ baseline_pr_sup = [0.2052, 0.0295, 0.0918, 0.0040, 0.0202, 0.2873, 0.0095, 0.005
 for idx, sig_key in enumerate(sigkeys):
     for scoring_metric in scoring_metrics:
         plot_single_funcs(sig_key, scoring_metric, baseline_pr_sup[idx], baseline_if_sup[idx])
+
+
+
+# now we do not go through through boxed_density due to its big uncertainties.
+scoring_metrics = ["depth", "density", "adj_depth", "adj_density", "boxed_ratio", "boxed_density2"]
+ibm_color_blind_palette = ["#648fff", "#ffb000", "#785ef0", "#dc267f", "#fe6100", "#8c564b"]
+
+for sig_key in sigkeys:
+    plt.figure(figsize=(10,10))
+    plt.plot(np.linspace(0, 1), np.linspace(0, 1), '--', color='0.75')
+    plt.xlim([10**-(6), 1.0])
+    plt.ylim([10**-(6), 1.05])
+    plt.axvline(0.00001, color='red', linestyle='dashed', linewidth=1) # threshold value for measuring anomaly detection efficiency
+    plt.xlabel('False Positive Rate',fontsize=13)
+    plt.ylabel('True Positive Rate',fontsize=13)
+    plt.semilogx()
+    plt.semilogy()
+
+    for idx, scoring_metric in enumerate(scoring_metrics):
+
+        results = f"results/isotree/kfold_models/{sig_key}_ntrees_100__scoring_metric_{scoring_metric}__5"
+        with open(results, 'rb') as f:
+            results_dict_iso = pickle.load(f)
+            plt.plot(results_dict_iso["ROCAUC"]["base"], results_dict_iso["ROCAUC"]["mean_curve"], color= ibm_color_blind_palette[idx], lw=2, label = f'iForest {sig_key} {scoring_metric} (AUC = %.01f%% ± %.01f%%)' % (results_dict_iso["ROCAUC"]["auc_mean"] * 100, results_dict_iso["ROCAUC"]['auc_unc'] * 100))
+    plt.legend(loc='lower right',fontsize=13)
+    plt.savefig(f"scans/kfold_scoring_metric/{sig_key}_summary_iforest_auroc")
+    plt.show()
+    
+
+
+
+
+
+
 
 
 
