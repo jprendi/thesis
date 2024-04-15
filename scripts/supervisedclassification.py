@@ -1,17 +1,21 @@
-from tensorflow.keras.utils import to_categorical
-from sklearn.datasets import fetch_openml
+"""
+this assumes you already loaded the do_crossvalidation.py script!
+
+"""
+import pandas as pd
+
 from sklearn.preprocessing import StandardScaler
 import numpy as np
-from scripts import dataset
+import dataset
 import tensorflow as tf
-from scripts.callbacks import all_callbacks
+from callbacks import all_callbacks
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Activation, BatchNormalization
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.regularizers import l1
 from tensorflow.keras.models import load_model
 import pickle
-from sklearn.metrics import roc_curve, auc
+from sklearn.metrics import roc_curve, auc, precision_recall_curve
 
 
 ## most of this code is borrowed from the hls4ml tutorial :)
@@ -20,7 +24,7 @@ class SupervisedClassifier():
 
     def __init__(self, signal, random_seed=1, train=True):
         self.sig_key = signal
-        self.X_train_val, self.X_test, self.y_train_val, self.y_test = dataset.supervised_xtrain_xtest(sig_key=signal)
+        self.X_train_val, self.X_test, self.y_train_val, self.y_test  = dataset.supervised_xtrain_xtest(sig_key=signal)
         self.seed = random_seed
         np.random.seed(self.seed)
         tf.random.set_seed(self.seed)
@@ -69,23 +73,44 @@ class SupervisedClassifier():
         )
 
     def predict_and_save(self):
+        results_dict = {}
         y_keras = self.model.predict(self.X_test)
         
         FPR, TPR, _ = roc_curve(y_score=np.max(y_keras, axis=1), y_true=self.y_test[:,0])
         AUC = auc(FPR, TPR)
+        precision, recall, _ = precision_recall_curve(probas_pred=np.max(y_keras, axis=1), y_true=self.y_test[:,0])
+        PR_AUC = auc(recall, precision)
+
+        results_dict["FPR"] = FPR
+        results_dict["TPR"] = TPR
+        results_dict["AUC"] = AUC
+        results_dict["precision"] = precision
+        results_dict["recall"] = recall
+        results_dict["PR_AUC"] = PR_AUC
+
+
         with open(f'results/supervised_classifier_performance/supervised_{self.sig_key}.pkl', 'wb') as f:
-            pickle.dump(y_keras, f)
-            pickle.dump(self.X_test, f)
-            pickle.dump(self.y_test, f)
-            pickle.dump(FPR, f)
-            pickle.dump(TPR, f)
-            pickle.dump(AUC, f)
+            pickle.dump(results_dict, f)
         print("Data saved successfully.")
-        data_string = [f'results/supervised_classifier_performance/supervised_{self.sig_key}.pkl']
-
-        return data_string, FPR, TPR, AUC
 
 
-# Save dictionaries to file
+sigkeys = ["ttHto2B", "VBFHToInvisible", "GluGluHToGG_M-90", "HTo2LongLivedTo4b_MH-125_MFF-12_CTau-900mm", "ggXToYYTo2Mu2E_m18", "GluGluHToTauTau", "SMS-Higgsino", "SUSYGluGluToBBHToBB_NarrowWidth_M-120"]
 
+for sig in sigkeys:
+    print(f"{sig}")
+    SC = SupervisedClassifier(signal=sig, train=False)
+    SC.predict_and_save()
+    print(len(SC.X_test), len(SC.y_test))
 
+df = pd.read_csv("results/isotree/kfold_models/results_kfold.csv").drop('Unnamed: 0', axis=1) 
+
+for sig_key in sigkeys:
+    results = f'results/supervised_classifier_performance/supervised_{sig_key}.pkl'
+    with open(results, 'rb') as f:
+        results_dict = pickle.load(f)
+    ll = [sig_key, "supervised_NN", results_dict["AUC"], 0, results_dict["PR_AUC"], 0]
+    df.loc[len(df)] = ll
+
+df.sort_values(by=['signal', 'scoring metric'], ascending=[True, True]).to_csv("results/results_iso_supervised.csv")
+
+print("done!")

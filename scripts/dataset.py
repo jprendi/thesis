@@ -20,7 +20,6 @@ def create_xtrain_xtest(random_seed=1, background_data='NuGun_preprocessed.h5', 
 
 
 
-
 def supervised_xtrain_xtest(sig_key, signal_data = 'BSM_preprocessed.h5', random_seed=1, background_data='NuGun_preprocessed.h5', bkg_key='full_data_cyl'):
     le = LabelEncoder()
     bkg = load_dataset(background_data, bkg_key)
