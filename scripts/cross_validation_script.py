@@ -174,10 +174,11 @@ class Cross_Validation:
         interp_tpr={}
         interp_tpr_pr = {}
         base = np.exp(np.linspace(math.log(0.00000005), 0., 1000000)) # bc we are interested in the loglog plot later! :)
-        
+        base_pr = np.linspace(0, 1, 1000000)
+
         for i in range(self.k):
             interp_tpr[i] = np.interp(base, fprs[i], tprs[i])
-            interp_tpr_pr[i] = np.interp(base, recalls[i][::-1], precisions[i][::-1])
+            interp_tpr_pr[i] = np.interp(base_pr, recalls[i][::-1], precisions[i][::-1])
 
 
         mean_curve = np.mean(list(interp_tpr.values()), axis=0)
@@ -191,7 +192,7 @@ class Cross_Validation:
         pr_auc_unc = np.std(list(pr_aucs.values()))
 
 
-        return mean_curve, error_curve, base, auc_mean, auc_unc, mean_precision, error_precision, base, pr_auc_mean, pr_auc_unc
+        return mean_curve, error_curve, base, auc_mean, auc_unc, mean_precision, error_precision, base_pr, pr_auc_mean, pr_auc_unc
 
 
     def getnsave_kfold_auc_prauc(self, sigkey):
