@@ -6,9 +6,9 @@ import pandas as pd
 
 from sklearn.preprocessing import StandardScaler
 import numpy as np
-import dataset
+from scripts import dataset
 import tensorflow as tf
-from callbacks import all_callbacks
+from scripts.callbacks import all_callbacks
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Activation, BatchNormalization
 from tensorflow.keras.optimizers import Adam
@@ -16,6 +16,7 @@ from tensorflow.keras.regularizers import l1
 from tensorflow.keras.models import load_model
 import pickle
 from sklearn.metrics import roc_curve, auc, precision_recall_curve
+import matplotlib.pyplot as plt
 
 
 ## most of this code is borrowed from the hls4ml tutorial :)
@@ -42,11 +43,13 @@ class SupervisedClassifier():
         tf.random.set_seed(self.seed)
         self.model = 0
 
-        if train:
-            self.architecture()
-            self.train_model()
-        else:
-            self.model = load_model(f'trained_models/basic_classifier/model_{self.sig_key}/KERAS_check_best_model.h5')
+        self.architecture()
+        
+        # if train:
+        #     self.architecture()
+        #     self.train_model()
+        # else:
+        #     self.model = load_model(f'trained_models/basic_classifier/model_{self.sig_key}/KERAS_check_best_model.h5')
 
 
     def architecture(self):
@@ -79,17 +82,28 @@ class SupervisedClassifier():
             lr_epsilon=0.000001,
             lr_cooldown=2,
             lr_minimum=0.0000001,
-            outputDir=f'trained_models/basic_classifier/model_{self.sig_key}',
+            outputDir=f'nu/model_{self.sig_key}'# trained_models/basic_classifier/model_{self.sig_key}',
         )
-        self.model.fit(
+        
+        history = self.model.fit(
             self.X_train_val,
             self.y_train_val,
             batch_size=1024,
-            epochs=30,
+            epochs=100, #30,
             validation_split=0.25,
             shuffle=True,
             callbacks=callbacks.callbacks,
         )
+    
+        # Plot training and validation loss
+        plt.plot(history.history['loss'], label='Training Loss')
+        plt.plot(history.history['val_loss'], label='Validation Loss')
+        plt.xlabel('Epoch')
+        plt.ylabel('Loss')
+        plt.title('Training and Validation Loss')
+        plt.legend()
+        plt.show()
+
 
     def predict_and_save(self):
         """
@@ -116,23 +130,23 @@ class SupervisedClassifier():
         print("Data saved successfully.")
 
 
-sigkeys = ["ttHto2B", "VBFHToInvisible", "GluGluHToGG_M-90", "HTo2LongLivedTo4b_MH-125_MFF-12_CTau-900mm", "ggXToYYTo2Mu2E_m18", "GluGluHToTauTau", "SMS-Higgsino", "SUSYGluGluToBBHToBB_NarrowWidth_M-120"]
+# sigkeys = ["ttHto2B", "VBFHToInvisible", "GluGluHToGG_M-90", "HTo2LongLivedTo4b_MH-125_MFF-12_CTau-900mm", "ggXToYYTo2Mu2E_m18", "GluGluHToTauTau", "SMS-Higgsino", "SUSYGluGluToBBHToBB_NarrowWidth_M-120"]
 
-for sig in sigkeys:
-    print(f"{sig}")
-    SC = SupervisedClassifier(signal=sig, train=False)
-    SC.predict_and_save()
-    print(len(SC.X_test), len(SC.y_test))
+# for sig in sigkeys:
+#     print(f"{sig}")
+#     SC = SupervisedClassifier(signal=sig, train=False)
+#     SC.predict_and_save()
+#     print(len(SC.X_test), len(SC.y_test))
 
-df = pd.read_csv("results/isotree/kfold_models/results_kfold.csv").drop('Unnamed: 0', axis=1) 
+# df = pd.read_csv("results/isotree/kfold_models/results_kfold.csv").drop('Unnamed: 0', axis=1) 
 
-for sig_key in sigkeys:
-    results = f'results/supervised_classifier_performance/supervised_{sig_key}.pkl'
-    with open(results, 'rb') as f:
-        results_dict = pickle.load(f)
-    ll = [sig_key, "supervised_NN", results_dict["AUC"], 0, results_dict["PR_AUC"], 0]
-    df.loc[len(df)] = ll
+# for sig_key in sigkeys:
+#     results = f'results/supervised_classifier_performance/supervised_{sig_key}.pkl'
+#     with open(results, 'rb') as f:
+#         results_dict = pickle.load(f)
+#     ll = [sig_key, "supervised_NN", results_dict["AUC"], 0, results_dict["PR_AUC"], 0]
+#     df.loc[len(df)] = ll
 
-df.sort_values(by=['signal', 'scoring metric'], ascending=[True, True]).to_csv("results/results_iso_supervised.csv")
+# df.sort_values(by=['signal', 'scoring metric'], ascending=[True, True]).to_csv("results/results_iso_supervised.csv")
 
-print("done!")
+# print("done!")
