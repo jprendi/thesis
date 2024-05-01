@@ -17,6 +17,13 @@ def load_dataset(dataset, key):
     Returns:
         numpy.ndarray: The loaded dataset.
     """
+    if dataset == 'BSM' or dataset == 'sig':
+        dataset = 'BSM_preprocessed.h5'
+    elif dataset == 'bkg' or dataset == 'NuGun':
+        dataset == 'NuGun_preprocessed.h5'
+    else:
+        dataset = dataset
+
     with h5py.File(dataset, 'r') as file:
         dats = file[key]
         datss = dats[()]
@@ -74,6 +81,74 @@ def supervised_xtrain_xtest(sig_key, signal_data='BSM_preprocessed.h5', random_s
     return x_train, x_test, y_train, y_test
 
 
+def create_CAE_datset(test_size=0.2, val_size=0.2):
+    """
+    Create train, test and validation set from the background and prepares it in a way that can be used as a direct input for the CAE defined in the CAE.py script.
+    Parameters:
+        test_size (int): fixes how big the test size is
+        val_size (str): fixes how big the val size is
+    Returns:
+        tuple: A tuple containing train, validation and test datasets in the right shape for the CAE.
+    """
+        
+    with h5py.File('NuGun_preprocessed.h5', 'r') as file:
+        dats = file['full_data_cyl']
+        datss = dats[()]
+        np.random.seed(1) 
+        np.random.shuffle(datss)
+
+    X_train, X_test = train_test_split(datss, test_size=test_size, shuffle=True)
+    X_train, X_val = train_test_split(X_train, test_size=val_size)
+    return np.reshape(X_train, (-1, 33,3,1)), np.reshape(X_test, (-1, 33,3,1)), np.reshape(X_val, (-1, 33,3,1))
+
+
+def load_sig_CAE(key):
+    """
+    Create train, test and validation set from the background and prepares it in a way that can be used as a direct input for the CAE defined in the CAE.py script.
+    Parameters:
+        key (str): key that indicates which BSM signal is to be loaded
+    Returns:
+        numpy.ndarray: a numpy ndarray of the loaded signal datasets in the right shape for the CAE to use for prediction
+    """
+    with h5py.File('BSM_preprocessed.h5', 'r') as file:
+        dats = file[key]
+        datss = dats[()]
+    return np.reshape(datss, (-1, 33,3,1))
+
+
+def get_all_bsm_keys(dataset='BSM_preprocessed.h5'):
+    """
+    Get all keys from a BSM dataset.
+
+    Parameters:
+        dataset (str): The path to the BSM dataset HDF5 file.
+
+    Returns:
+        list: A list of tuples containing keys and their corresponding shapes.
+    """
+    listing = []
+    with h5py.File(dataset, 'r') as file:
+        for i in file.keys():
+            listing.append([i, np.shape(file[i])])
+    return listing
+
+
+def bsm_keys(dataset='BSM_preprocessed.h5'):
+    """
+    Get BSM keys having a shape of (3,).
+
+    Parameters:
+        dataset (str): The path to the BSM dataset HDF5 file.
+
+    Returns:
+        list: A list of tuples containing keys and their corresponding shapes.
+    """
+    lists = get_all_bsm_keys(dataset)
+    potential=[]
+    for i in range(len(lists)):
+        if np.shape(lists[i][1]) == (3,):
+            potential.append(lists[i])
+    return potential
 
 
 def inject_signal(bkg, sig, size, percentage, random_seed=1):
@@ -112,38 +187,3 @@ def inject_signal(bkg, sig, size, percentage, random_seed=1):
     new_dataset = np.concatenate((newdat1, newdat2))
 
     return new_dataset, labels, (newdat1, newdat2), (size1, size2)
-
-
-def get_all_bsm_keys(dataset='BSM_preprocessed.h5'):
-    """
-    Get all keys from a BSM dataset.
-
-    Parameters:
-        dataset (str): The path to the BSM dataset HDF5 file.
-
-    Returns:
-        list: A list of tuples containing keys and their corresponding shapes.
-    """
-    listing = []
-    with h5py.File(dataset, 'r') as file:
-        for i in file.keys():
-            listing.append([i, np.shape(file[i])])
-    return listing
-
-
-def bsm_keys(dataset='BSM_preprocessed.h5'):
-    """
-    Get BSM keys having a shape of (3,).
-
-    Parameters:
-        dataset (str): The path to the BSM dataset HDF5 file.
-
-    Returns:
-        list: A list of tuples containing keys and their corresponding shapes.
-    """
-    lists = get_all_bsm_keys(dataset)
-    potential=[]
-    for i in range(len(lists)):
-        if np.shape(lists[i][1]) == (3,):
-            potential.append(lists[i])
-    return potential
