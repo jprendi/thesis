@@ -12,3 +12,5 @@ results/
 injected_signal_notebooks/
 __pycache__
 CNNS/
+
+*.ipynb
