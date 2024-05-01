@@ -10,3 +10,5 @@ scripts/.DS_Store
 trained_models/
 results/
 injected_signal_notebooks/
+__pycache__
+CNNS/
