@@ -6,7 +6,7 @@ from sklearn.preprocessing import LabelEncoder, StandardScaler
 from tensorflow.keras.utils import to_categorical
 from sklearn.utils import shuffle
 
-def load_dataset(dataset, key):
+def load_dataset(dataset, key='full_data_cyl'):
     """
     Load a dataset from an HDF5 file.
 
@@ -151,7 +151,7 @@ def bsm_keys(dataset='BSM_preprocessed.h5'):
     return potential
 
 
-def inject_signal(bkg, sig, size, percentage, random_seed=1):
+def inject_signal(bkg, sig, size='max', percentage=0.01, random_seed=1):
     """
     Inject signal into background data.
 

@@ -16,22 +16,21 @@ tf.__version__ must give a version around 2  !
 
 """
 
-import numpy as np
+import numpy as np # type: ignore
 import math
 import os
 import pathlib
-import matplotlib.pyplot as plt
-import matplotlib
-import tensorflow as tf
-import tensorflow.keras as keras
-from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Input, Dense,ZeroPadding2D, BatchNormalization, Activation, Layer, ReLU, LeakyReLU,Conv2D,AveragePooling2D,UpSampling2D,Reshape,Flatten
-from tensorflow.keras import backend as K
+import matplotlib.pyplot as plt # type: ignore
+import tensorflow as tf # type: ignore
+import tensorflow.keras as keras  # type: ignore
+from tensorflow.keras.models import Model  # type: ignore
+from tensorflow.keras.layers import Input, Dense,ZeroPadding2D, BatchNormalization, Activation, Layer, ReLU, LeakyReLU,Conv2D,AveragePooling2D,UpSampling2D,Reshape,Flatten  # type: ignore
+from tensorflow.keras import backend as K  # type: ignore
 from scripts import dataset
 from scripts.func import load_model, save_model, mse_loss
-from sklearn.metrics import roc_curve, auc, precision_recall_curve
+from sklearn.metrics import roc_curve, auc, precision_recall_curve  # type: ignore
 import pickle
-import pandas as pd
+import pandas as pd  # type: ignore
 
 class CAE:
     '''

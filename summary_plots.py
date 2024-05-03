@@ -2,8 +2,8 @@
 the script that just produced my summary plots for ROC and PR and directly saves them.. nothing fancy
 '''
 
-import matplotlib.pyplot as plt
-import numpy as np
+import matplotlib.pyplot as plt # type: ignore
+import numpy as np # type: ignore
 import pickle
 
 
