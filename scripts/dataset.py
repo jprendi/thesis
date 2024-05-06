@@ -6,7 +6,7 @@ from sklearn.preprocessing import LabelEncoder, StandardScaler
 from tensorflow.keras.utils import to_categorical
 from sklearn.utils import shuffle
 
-def load_dataset(dataset, key='full_data_cyl'):
+def load_dataset(dataset, key='full_data_cyl', pid=False):
     """
     Load a dataset from an HDF5 file.
 
@@ -23,14 +23,19 @@ def load_dataset(dataset, key='full_data_cyl'):
     if dataset == 'bkg' or dataset == 'NuGun':
         dataset == 'NuGun_preprocessed.h5'
 
-
     with h5py.File(dataset, 'r') as file:
         dats = file[key]
         datss = dats[()]
-    return datss.reshape(len(datss), 99)
+
+    if pid==True:
+        data = datss.reshape(len(datss), 99)
+        nulls = get_zeros(data)
+        return remove_columns(data, nulls)
+    else:
+        return datss.reshape(len(datss), 99)
 
 
-def create_xtrain_xtest(random_seed=1, background_data='NuGun_preprocessed.h5', bkg_key='full_data_cyl'):
+def create_xtrain_xtest(random_seed=1, background_data='NuGun_preprocessed.h5', bkg_key='full_data_cyl', pid=False):
     """
     Create training and testing datasets from background data.
 
@@ -42,7 +47,7 @@ def create_xtrain_xtest(random_seed=1, background_data='NuGun_preprocessed.h5', 
     Returns:
         tuple: A tuple containing train and test datasets.
     """
-    datt = load_dataset(background_data, bkg_key)
+    datt = load_dataset(background_data, bkg_key, pid)
     x_train ,x_test = train_test_split(datt, random_state=random_seed)
     return x_train, x_test
 
@@ -149,6 +154,28 @@ def bsm_keys(dataset='BSM_preprocessed.h5'):
         if np.shape(lists[i][1]) == (3,):
             potential.append(lists[i])
     return potential
+
+def get_zeros(dataset):
+    '''
+    Returns a list of the zero-entried columns
+    '''
+    #   this is not efficient and not consistent. so i just return the list that i know is true every time here !
+    # # transposed_dataset = zip(*dataset)
+    # # zero_columns = []
+    # # for i, column in enumerate(transposed_dataset):
+    # #     if all(element == 0 for element in column):
+    # #         zero_columns.append(i)
+    # # return zero_columns[::-1]  
+    return [62, 61, 60, 59, 58, 57, 1]
+
+
+def remove_columns(dataset, list):
+    '''
+    Removes given columns of dataset.
+    '''
+    for column in list:
+        dataset = np.delete(dataset, column, axis=1)
+    return dataset
 
 
 def inject_signal(bkg, sig, size='max', percentage=0.01, random_seed=1):

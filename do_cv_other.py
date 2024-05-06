@@ -26,6 +26,7 @@ for sigkey in sigkeys:
     for algo in algos:
         kwargs = algo_dict[algo]
         results = "results/isotree/other_models/" + f"{sigkey}_" + "__".join([f"{key}_{value}" for key, value in kwargs.items()]) + "__" + "5"
+        
         with open(results, 'rb') as f:
             results_dict = pickle.load(f)
         # print(results)

@@ -1,24 +1,23 @@
 """
-this class is to help perform the whole cross validation task! :)
+
+this class is to help perform the whole cross validation task BUT specifically for PIDForest !!! 
 it trains your k models and then evaluates the uncertainty of the model with the means of ROC-AUC and PR-AUC!
-it is almost the same as cross_validation_script.py ...
+it is the same as cross_validation_script.py but adapted to PID needs :) 
+
 """
 
 from scripts import dataset
-# import scripts.dataset
 from sklearn.metrics import roc_curve, auc, precision_recall_curve
 from sklearn.model_selection import KFold
 import numpy as np
-# import matplotlib.pyplot as plt
 import os, glob, pickle, math
-from isotree import IsolationForest
 from scripts.forest import Forest
 
 class Cross_Validation:
     """
     Cross validation class!
     """
-    def __init__(self, kfold, model_parameters, train_models = False, mod = 'other'): 
+    def __init__(self, model_parameters, kfold=5, train_models = False): 
         """
         ☆★☆ init of the class!
 
@@ -31,7 +30,7 @@ class Cross_Validation:
         """
         self.k = kfold
         self.kwargs = model_parameters
-        self.bkg = dataset.load_dataset('NuGun_preprocessed.h5','full_data_cyl')
+        self.bkg = dataset.load_dataset('NuGun_preprocessed.h5','full_data_cyl', pid=True)
         self.sigkey = []
         self.sig = []
         self.train_indices = 0
@@ -73,13 +72,14 @@ class Cross_Validation:
         """
         trains and saves the model! :)
         """
-        model_string = "trained_models/isotree/other_models/model__" + "__".join([f"{key}_{value}" for key, value in self.kwargs.items()])+ f"__fold_{self.fold+1}_of_{self.k}" # this line is thanks to chatgpt
+        model_string = "trained_models/isotree/other_models/model__PIDForest" + f"__fold_{self.fold+1}_of_{self.k}" 
         x_train = self.get_trainset()
         if os.path.isfile(model_string)==True:
             print(f"This model already exists: {model_string}.")
         else:
-            model = IsolationForest(**self.kwargs).fit(x_train)
-            pickle.dump(model, open(model_string, 'wb'))
+            forest = Forest(**self.kwargs)
+            forest.fit(np.transpose(x_train))
+            pickle.dump(forest.tree, open(model_string, 'wb'))
             print(f"Model trained: {model_string}.")
         return model_string
     
@@ -97,9 +97,13 @@ class Cross_Validation:
             self.cross_val_splits() 
             model_string = self.train_and_save_model()
             model = pickle.load(open(model_string, 'rb'))
+            forest = Forest(**self.kwargs)
+            forest.tree = model
             x_test = self.get_teststet_bkgonly()
-            self.x_test_predict[i] = model.predict(x_test, output="score")
-            print(len(self.x_test_predict))
+            _,_,_,_, self.x_test_predict[i] = forest.predict(np.transpose(x_test))
+            print(f"trained model nr {i}")
+
+    
 
     def get_predictions(self, model, i):
         """
@@ -112,9 +116,12 @@ class Cross_Validation:
         """
         bkg_pred = self.x_test_predict[i]
         loaded_model = pickle.load(open(model, 'rb'))
-        sig_pred = model.predict(np.transpose(self.sig), output='score')
-        score_test = np.concatenate((bkg_pred, sig_pred))
-        labels = np.concatenate((np.zeros(len(bkg_pred)), np.ones(len(sig_pred))))
+        forest = Forest(**self.kwargs)
+        forest.tree = loaded_model
+        _, _, _, _, sig_pred = forest.predict(np.transpose(self.sig), err=0.1)
+        filtered_score_sig = sig_pred[sig_pred < -400]
+        score_test = np.concatenate((-bkg_pred, -filtered_score_sig))
+        labels = np.concatenate((np.zeros(len(bkg_pred)), np.ones(len(filtered_score_sig))))
         return score_test, labels
 
 
@@ -159,7 +166,7 @@ class Cross_Validation:
         - pr_auc_mean (float): mean of AUC of PR curve for all k folds
         - pr_auc_unc (float): uncertainty of AUC of PR curve for all k folds
         """
-        model_string = "trained_models/isotree/other_models/model__" + "__".join([f"{key}_{value}" for key, value in self.kwargs.items()])+"*"
+        model_string = "trained_models/isotree/other_models/model__PIDForest" + "*"
         model_names = glob.glob(model_string)
         fprs = {}
         tprs = {}
@@ -172,7 +179,7 @@ class Cross_Validation:
             self.fold = i
             self.cross_val_splits()
             score, labels = self.get_predictions(model=model_names[i], i=i)
-            fprs[i], tprs[i], aucs[i], precisions[i], recalls[i], pr_aucs[i] = self.predict_value(score=score, labels=labels)
+            fprs[i], tprs[i], aucs[i], precisions[i], recalls[i], pr_aucs[i] = self.predict_value(score= score, labels=labels)
 
         interp_tpr={}
         interp_tpr_pr = {}
@@ -231,7 +238,7 @@ class Cross_Validation:
                 "pr_auc_unc": pr_auc_unc
             }
         }
-        output_file = "results/isotree/other_models/" + f"{self.sigkey}_" + "__".join([f"{key}_{value}" for key, value in self.kwargs.items()]) + "__" + f"{self.k}"
+        output_file = "results/isotree/other_models/" + f"{self.sigkey}_" + "__PIDForest"+ "__" + f"{self.k}"
         with open(output_file, 'wb') as f:
             pickle.dump(results_dict, f)
 
@@ -241,5 +248,5 @@ class Cross_Validation:
         """
         returns a list of all the model names to loop ver
         """
-        model_names = "trained_models/isotree/other_models/model__" + "__".join([f"{key}_{value}" for key, value in self.kwargs.items()])+"_*"+"fold"+"*"
+        model_names = "trained_models/isotree/other_models/model__PIDForest" + "_*"+"fold"+"*"
         return list(glob.glob(model_names))
