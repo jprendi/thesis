@@ -19,10 +19,10 @@ def load_dataset(dataset, key='full_data_cyl'):
     """
     if dataset == 'BSM' or dataset == 'sig':
         dataset = 'BSM_preprocessed.h5'
-    elif dataset == 'bkg' or dataset == 'NuGun':
+
+    if dataset == 'bkg' or dataset == 'NuGun':
         dataset == 'NuGun_preprocessed.h5'
-    else:
-        dataset = dataset
+
 
     with h5py.File(dataset, 'r') as file:
         dats = file[key]
@@ -178,8 +178,18 @@ def inject_signal(bkg, sig, size='max', percentage=0.01, random_seed=1):
     size1 = int((1 - percentage) * size)
     size2 = int(percentage * size)
 
-    n1 = random.sample(range(dim1[0]), size1)
-    n2 = random.sample(range(dim2[0]), size2)
+    size1 = int((1 - percentage) * size)
+    size2 = int(percentage * size)
+
+    if size2 > dim2[0]:
+        size = dim2[0]/percentage
+        size1 = int((1 - percentage) * size)
+        size2 = int(percentage * size)
+        n2 = random.sample(range(dim2[0]), size2)
+        n1 = random.sample(range(dim1[0]), size1)
+    else:
+        n1 = random.sample(range(dim1[0]), size1)
+        n2 = random.sample(range(dim2[0]), size2)
 
     newdat1 = bkg[n1]
     newdat2 = sig[n2]
