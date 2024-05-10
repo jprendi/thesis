@@ -1,4 +1,4 @@
-from scripts.cross_validation_script_othermodels import Cross_Validation
+from scripts.cross_validation_script_PIDForest import Cross_Validation
 import pickle
 import pandas as pd
 
@@ -24,4 +24,4 @@ for sigkey in sigkeys:
     ll = [sigkey, "PID", results_dict["ROCAUC"]["auc_mean"], results_dict["ROCAUC"]["auc_unc"], results_dict["PRAUC"]["pr_auc_mean"], results_dict["PRAUC"]["pr_auc_unc"]]
     results_table.append(ll)
 
-pd.DataFrame(results_table, columns =['signal', 'PID', 'rocauc', 'rocauc unc', 'prauc', 'prauc unc']).to_csv(path_or_buf="results/isotree/other_models/results_PID.csv")
+pd.DataFrame(results_table, columns =['signal', 'PID', 'rocauc', 'rocauc unc', 'prauc', 'prauc unc']).to_csv(path_or_buf="results/isotree/other_models/results_PID_10.csv")
