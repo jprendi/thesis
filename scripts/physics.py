@@ -34,7 +34,7 @@ def inv_mass_indv(entry_data, type_entry):
 
 # due to it being L1 data!
     
-def invariant_mass(dataset, type):
+def invariant_mass(dataset, type, return_indices = False):
     """
     Calculate the invariant mass for particles of a specific type in the dataset.
 
@@ -43,9 +43,17 @@ def invariant_mass(dataset, type):
         type (str): The type of particles ('jet', 'muon', or 'egamma').
 
     Returns:
+        return_indeces= False:
         list: List of invariant mass values for the specified type of particles.
+
+        return_indeces= True:
+        tuple: tuple[0] is the list as stated above but tuple[1] now contains a list with the indices that we used to calculate tuple[0] for
     """
     result_list = []
+
+    if return_indices:
+        indices_list = []
+
     if type == 'jet':
         type_entry = (63, 66)
     elif type == 'muon':
@@ -55,10 +63,18 @@ def invariant_mass(dataset, type):
     else:
         raise ValueError("indicate type: 'jet', 'muon' or 'egamma'")
 
-    for entry_data in dataset[:-1]:  # assuming the last entry is not needed
+    for index, entry_data in enumerate(dataset[:-1]):  # assuming the last entry is not needed
         inv_mass = inv_mass_indv(entry_data, type_entry)
         if inv_mass is None or math.isinf(inv_mass):
             continue
         else:
-            result_list.append(inv_mass)
-    return result_list
+            if return_indices:
+                result_list.append(inv_mass)
+                indices_list.append(index)
+            else:
+                result_list.append(inv_mass)
+    
+    if return_indices:
+        return result_list, indices_list
+    else:
+        return result_list
