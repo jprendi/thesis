@@ -173,13 +173,13 @@ def get_zeros(dataset):
     '''
     Returns a list of the zero-entried columns
     '''
-    #   this is not efficient and not consistent. so i just return the list that i know is true every time here !
     # # transposed_dataset = zip(*dataset)
     # # zero_columns = []
     # # for i, column in enumerate(transposed_dataset):
     # #     if all(element == 0 for element in column):
     # #         zero_columns.append(i)
     # # return zero_columns[::-1]  
+        #   this is not efficient and not consistent. so i just return the list that i know is true every time here !
     return [62, 61, 60, 59, 58, 57, 1]
 
 
