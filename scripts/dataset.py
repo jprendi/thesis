@@ -5,6 +5,9 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 from tensorflow.keras.utils import to_categorical
 from sklearn.utils import shuffle
+from qkeras import quantized_bits
+from qkeras.utils import _add_supported_quantized_objects
+from qkeras import quantized_bits
 
 def load_dataset(dataset, key='full_data_cyl', pid=False):
     """
@@ -119,6 +122,17 @@ def load_sig_CAE(key):
         dats = file[key]
         datss = dats[()]
     return np.reshape(datss, (-1, 33,3,1))
+
+
+def load_axo_dataset(dataset, key='full_data_cyl'):
+    columns_to_remove = [98, 97, 96, 95, 94, 93, 62, 61, 60, 59, 58, 57, 56, 55, 54, 53, 52, 51, 38, 37, 36, 35, 34, 33, 32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15]
+    X_flat = remove_columns(load_dataset(dataset, key), columns_to_remove)
+
+    input_quantizer = quantized_bits(8,5,alpha=1)
+    scales = h5py.File('scales.h5')
+    scale_data = scales['norm_scale'][:].flatten()
+    offset_data = scales['norm_bias'][:].flatten()
+    return input_quantizer((X_flat.astype('float') - offset_data) / scale_data)
 
 
 def get_all_bsm_keys(dataset='BSM_preprocessed.h5'):
