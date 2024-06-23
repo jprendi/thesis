@@ -74,7 +74,6 @@ class SupervisedClassifier():
         Train the neural network model.
         """
         adam = Adam(lr=0.0001)
-        self.model.compile(optimizer=adam, loss=['categorical_crossentropy'], metrics=['accuracy'])
         callbacks = all_callbacks(
             stop_patience=1000,
             lr_factor=0.5,

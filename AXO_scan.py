@@ -25,18 +25,6 @@ from scripts.dataset import load_axo_dataset
 import pickle
 import pandas as pd
 
-# import os
-# import tensorflow as tf # type: ignore
-# import tensorflow.keras as keras  # type: ignore
-# from tensorflow.keras.models import Model  # type: ignore
-# from tensorflow.keras.layers import Input, Dense,ZeroPadding2D, BatchNormalization, Activation, Layer, ReLU, LeakyReLU,Conv2D,AveragePooling2D,UpSampling2D,Reshape,Flatten  # type: ignore
-# from tensorflow.keras import backend as K  # type: ignore
-# from scripts import dataset
-# from scripts.func import load_model, save_model, mse_loss
-# from sklearn.metrics import roc_curve, auc, precision_recall_curve  # type: ignore
-# import pickle
-# import pandas as pd  # type: ignore
-
 class AXOL1TL:
     '''
     this class loads AXO and helps the prediction process

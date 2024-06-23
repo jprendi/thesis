@@ -169,7 +169,7 @@ def bsm_keys(dataset='BSM_preprocessed.h5'):
             potential.append(lists[i])
     return potential
 
-def get_zeros(dataset):
+def get_zeros():
     '''
     Returns a list of the zero-entried columns
     '''
