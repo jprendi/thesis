@@ -47,10 +47,9 @@ def run_NPLM(ZBT, NGT,  NG_weights, bins_code, ymax_code, xlabel_code, seed=5839
     BSMarchitecture    = layers
     BSMdf              = compute_df(input_size=BSMarchitecture[0], hidden_layers=BSMarchitecture[1:-1])
 
-    # featureReff, ind = invariant_mass(NGT, type='jet', return_indices = True)
-    featureReff = NGT
-    featureData = ZBT
-    # np.array(invariant_mass(ZBT, type='jet')).reshape((-1,1))
+    featureReff, ind = invariant_mass(NGT, type='jet', return_indices = True)
+    # featureReff = NGT
+    featureData = np.array(invariant_mass(ZBT, type='jet')).reshape((-1,1))
 
     featureRef = np.array(featureReff).reshape((-1,1))
     feature    = np.concatenate((featureData, featureRef), axis=0)
@@ -60,18 +59,18 @@ def run_NPLM(ZBT, NGT,  NG_weights, bins_code, ymax_code, xlabel_code, seed=5839
     targetRef   = np.zeros_like(featureRef)
     weightsData = np.ones_like(featureData)#*ratiooooo
 
-    # weightsRef_1 = np.array(NG_weights)[ind].reshape((-1,1))
+    weightsRef_1 = np.array(NG_weights)[ind].reshape((-1,1))
 
-    # counts_D, bin_edges_D= np.histogram(featureData,  weights=weightsData, bins=100, range=(0,4000))
-    # counts_R, bin_edges_R = np.histogram(featureRef,  weights=weightsRef_1, bins=100, range=(0,4000))
+    counts_D, bin_edges_D= np.histogram(featureData,  weights=weightsData, bins=100, range=(0,4000))
+    counts_R, bin_edges_R = np.histogram(featureRef,  weights=weightsRef_1, bins=100, range=(0,4000))
 
-    # integral_D= np.sum(counts_D * np.diff(bin_edges_D))
-    # integral_R= np.sum(counts_R * np.diff(bin_edges_R))
+    integral_D= np.sum(counts_D * np.diff(bin_edges_D))
+    integral_R= np.sum(counts_R * np.diff(bin_edges_R))
 
-    # ratiooo = integral_D/integral_R
+    ratiooo = integral_D/integral_R
 
 
-    # weightsRef = weightsRef_1*ratiooo#
+    weightsRef = weightsRef_1*ratiooo#
     N_D = len(featureData)
     N_R = len(featureRef)
     weightsRef  = np.ones_like(featureRef)*N_D*1./N_R
