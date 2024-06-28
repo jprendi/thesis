@@ -1,5 +1,15 @@
+'''
+with this script, we do a reweighting of NuGun for it to match ZeroBias better. 
+we start with the dijet invariant mass spectrum.
+we do individual reweighting of the two different jets by plotting their respective p_T and \eta distribution. 
+in both cases we observed a lack in data for the \eta distribution for p_T<30. 
+to deal with it, we simply look at data points above the threshold 30.
+
+this function also deals with certain gaps in the 2D distribution of both jets by simply linearly imputing them
+
+'''
+
 from model_data_sculpting import sculpt_study
-# from scripts import dataset
 from sklearn.model_selection import train_test_split
 import numpy as np
 import matplotlib.pyplot as plt
@@ -12,9 +22,22 @@ class create_reweight_maps():
     def __init__(self, sigkey, 
                  model_dir='trained_models/isotree/kfold_models/', 
                  model_name='model__ntrees_100__scoring_metric_depth__fold_1_of_5',
-                 dimass_type='jet'):
+                 dimass_type='jet', grids=False):
+        
+        """
+        ☆★☆ init of the class!
 
-        self.sculpts = sculpt_study(model_dir=model_dir, model_name=model_name, signal=sigkey, dimass_type=dimass_type, grids=False)
+        here the dataset needed for reweighting NuGun is loaded and the weights derived
+
+        input parameteters:
+        - sigkey (string): the signal we are probing for
+        - model_dir (string): the path to the model
+        - model_name (string): the name of the file of the model. otherwise the default is the depth-based iForest
+        - dimass_type (string): indicate what type of object we want to look at in terms of dimass spectrum
+        - grids (bool): will let us know whether we would like to load the reweighting grid
+        """
+
+        self.sculpts = sculpt_study(model_dir=model_dir, model_name=model_name, signal=sigkey, dimass_type=dimass_type, grids=grids)
 
         self.ZB_Bottom = sculpt_study.select_anomalous_datapoints(self.sculpts.ZeroBias_anomaly_score, self.sculpts.ZeroBias_data, area='bottom', percentage=0.95)
         self.NG_Bottom = sculpt_study.select_anomalous_datapoints(self.sculpts.NuGun_anomaly_score, self.sculpts.NuGun_data, area='bottom', percentage=0.95)
@@ -39,14 +62,32 @@ class create_reweight_maps():
 
 
     def get_weights(self):
+        '''
+        loads the event by event map that resulted from the other code
+
+        output: list with the event-based weights
+        '''
         weights_jet1 = self.dataset_weights(self.top_NGT[:,63], self.top_NGT[:,64], self.ratio1, jet=1)
         weights_jet2 = self.dataset_weights(self.top_NGT[:,63+3], self.top_NGT[:,64+3], self.ratio1, jet=2)
         return list(map(self.multiply_entries, weights_jet1, weights_jet2))
 
     def multiply_entries(self, entry1, entry2):
+        '''
+        just a function to multiply entries
+        output: the multiplied entries
+        '''
         return entry1*entry2
 
     def get_grids(self, ZB_Bottom, NG_Bottom):
+        '''
+        creates the grid for both jets based on the p_T and pseudorapidity of the given jet!
+
+        input:
+        - ZB_Bottom (numpy.ndarray): the least anomalous data points in ZeroBias
+        - NG_Bottom (numpy.ndarray): the least anomalous data points in NuGun 
+
+        '''
+
         num_bins_x = 60
         quantiles_x = np.linspace(0, 1, num_bins_x + 1)
         bin_edge_x1 = np.quantile(ZB_Bottom[(ZB_Bottom[:, 63] > 30) & (ZB_Bottom[:, 66] > 30), 63], quantiles_x)
@@ -108,6 +149,19 @@ class create_reweight_maps():
 
 
     def search_right_value(self, datapoint_indices_pT, datapoint_indices_eta, grid, max_value=59):
+        '''
+        finds the value next (to the right) of the given data point. if the right value is empty, it takes the one next to it, etc.
+
+        input:
+        - datapoint_indices_pT (int): the index of the data point along p_T
+        - datapoint_indices_eta (int): the index of the data point along eta
+        - grid (numpy.ndarray): the grid with the weights
+        - max_value (int): set to 59 as we have 60 bins along the x-axis
+
+        output:
+        - counter (int): this corresponds to the index that is not empty next to the index we started out from
+
+        '''
         counter = datapoint_indices_pT+1
         # print(f"counter before while: {counter}")
         while grid[counter, datapoint_indices_eta] == 0:
@@ -122,6 +176,18 @@ class create_reweight_maps():
 
 
     def linear_impute(self, datapoint_indices, grid):
+        '''
+        this function is used to determine what value one needs to impute and which entries need to be imputed
+
+        input:
+        - datapoint_indices (int): the index we start out from (along p_T)
+        - grid (numpy.ndarray): the array with the weights
+
+        output:
+        - impute_value (float): the value that we impute given empty points with
+        - to_impute (list(tuple)): gives the index/indices of the datapoints that need to be imputed
+
+        '''
         datapoint_indices_pT = datapoint_indices[0]
         datapoint_indices_eta = datapoint_indices[1]
         left_value = grid[datapoint_indices_pT-1, datapoint_indices_eta]
@@ -134,6 +200,16 @@ class create_reweight_maps():
 
 
     def impute_values(self, histo):
+        '''
+        will impute the missing entries from a given 2D histogram
+
+        input: 
+        - histo (numpy.ndarray, numpy.ndarray): the result of a given 2D histogram
+
+        output:
+        - grid_1 (numpy.ndarray): the 2D grid with the now imputed values 
+        
+        '''
         grid_1 = histo[0]
         for p_T_index in range(1,len(histo[1])-2):
             for eta_index in range(1,(len(histo[2]))-1):
@@ -149,6 +225,17 @@ class create_reweight_maps():
 
 
     def find_bin2(self, jet_pt, jet_eta, all_grid):
+        '''
+        finds the weight of an event for the second jet
+
+        input:
+        - jet_pt (float): value of the p_T of jet 2
+        - jet_eta (float): value of the eta of jet 2
+        - all_grid (numpy.ndarray): the grid of the weights for jet 2
+
+        outut:
+        - calibration (float): gives the weight for that event
+        '''
         jet_range = self.ZBB_jet2[1]
         eta_range = self.ZBB_jet2[2]
 
@@ -158,6 +245,17 @@ class create_reweight_maps():
         return calibration
 
     def find_bin1(self, jet_pt, jet_eta, all_grid):
+        '''
+        finds the weight of an event for the first jet
+
+        input:
+        - jet_pt (float): value of the p_T of jet 1
+        - jet_eta (float): value of the eta of jet 1
+        - all_grid (numpy.ndarray): the grid of the weights for jet 1
+
+        outut:
+        - calibration (float): gives the weight for that event
+        '''
         jet_range = self.ZBB_jet1[1]
         eta_range = self.ZBB_jet1[2]    
 
@@ -165,11 +263,20 @@ class create_reweight_maps():
         eta_ind = np.digitize(jet_eta,eta_range[:-1])
         calibration = all_grid[pT_ind-1, eta_ind-1]
         return calibration
+    
 
     def dataset_weights(self, jet_pts, jet_etas, all_grid, jet):
+        '''
+        finds the weight of an event for a given jet
+
+        input:
+        - jet_pt (float): value of the p_T of a jet
+        - jet_eta (float): value of the eta of a jet
+        - all_grid (numpy.ndarray): the grid of the weights for the given jet
+        - jet(int): to indicate which jet we want to calculate (the first (jet=1) or the second jet (jet=2))
+        '''
+
         if jet == 2:
-            # return list(map(find_bin2, jet_pts, jet_etas, all_grid))
             return list(self.find_bin2(jet_pts, jet_etas, all_grid))
         else:
             return list(self.find_bin1(jet_pts, jet_etas, all_grid))
-            # return list(map(find_bin1, jet_pts, jet_etas, all_grid))
