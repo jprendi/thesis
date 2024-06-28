@@ -237,4 +237,4 @@ def inject_signal(bkg, sig, size='max', percentage=0.01, random_seed=1):
     labels = np.concatenate((np.zeros(size1), np.ones(size2)))
     new_dataset = np.concatenate((newdat1, newdat2))
 
-    return new_dataset, labels, (newdat1, newdat2), (size1, size2)
+    return new_dataset, labels, (newdat1, newdat2), (size1, size2), n1, n2
