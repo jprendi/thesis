@@ -14,4 +14,8 @@ The relevant scripts (to be run in this order) are: do_crossvalidation.py, super
 
 Relevant script of it: anomaly_detection_and_NPLM.py
 
-👉🏻  3) **Think of how to implement at 40 MHz Scouting System.** If stage 2) is successful in its study, the next step would be to think about how one would actually implement this within a 40 MHz Scouting system... :)
+👉🏻  3) **Think of how to implement at 40 MHz Scouting System.** If stage 2) is successful in its study, the next step would be to think about how one would actually implement this within a 40 MHz Scouting system...
+
+
+
+Where does the name **Foraging for New Physics** come from? What do people who scout do? They forage for useful things in the forest. Since we are looking for new physics within a Scouting system with forest-based models, I thought it'd make sense to call it foraging for new physics! :)
