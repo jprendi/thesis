@@ -27,7 +27,7 @@ from NPLM.ANALYSISutils import *
 from scripts.physics import invariant_mass
 
 
-def run_NPLM(ZBT, NGT,  NG_weights, seed=1, 
+def run_NPLM(ZBT, NGT,  NG_weights, bins_code, ymax_code, xlabel_code, seed=5839, 
                 total_epochs_tau = 20000,
                 plot=False, plot_reconstructions=False,
                 plot_loss=False):
@@ -47,7 +47,8 @@ def run_NPLM(ZBT, NGT,  NG_weights, seed=1,
     BSMarchitecture    = layers
     BSMdf              = compute_df(input_size=BSMarchitecture[0], hidden_layers=BSMarchitecture[1:-1])
 
-    featureReff, ind = invariant_mass(NGT, type='jet', return_indices = True)
+    # featureReff, ind = invariant_mass(NGT, type='jet', return_indices = True)
+    featureReff = NGT
     featureData = ZBT
     # np.array(invariant_mass(ZBT, type='jet')).reshape((-1,1))
 
@@ -59,18 +60,22 @@ def run_NPLM(ZBT, NGT,  NG_weights, seed=1,
     targetRef   = np.zeros_like(featureRef)
     weightsData = np.ones_like(featureData)#*ratiooooo
 
-    weightsRef_1 = np.array(NG_weights)[ind].reshape((-1,1))
+    # weightsRef_1 = np.array(NG_weights)[ind].reshape((-1,1))
 
-    counts_D, bin_edges_D= np.histogram(featureData,  weights=weightsData, bins=100, range=(0,4000))
-    counts_R, bin_edges_R = np.histogram(featureRef,  weights=weightsRef_1, bins=100, range=(0,4000))
+    # counts_D, bin_edges_D= np.histogram(featureData,  weights=weightsData, bins=100, range=(0,4000))
+    # counts_R, bin_edges_R = np.histogram(featureRef,  weights=weightsRef_1, bins=100, range=(0,4000))
 
-    integral_D= np.sum(counts_D * np.diff(bin_edges_D))
-    integral_R= np.sum(counts_R * np.diff(bin_edges_R))
+    # integral_D= np.sum(counts_D * np.diff(bin_edges_D))
+    # integral_R= np.sum(counts_R * np.diff(bin_edges_R))
 
-    ratiooo = integral_D/integral_R
+    # ratiooo = integral_D/integral_R
 
 
-    weightsRef = weightsRef_1*ratiooo#
+    # weightsRef = weightsRef_1*ratiooo#
+    N_D = len(featureData)
+    N_R = len(featureRef)
+    weightsRef  = np.ones_like(featureRef)*N_D*1./N_R
+
 
     target_0    = np.concatenate((targetData, targetRef), axis=0)
     weights     = np.concatenate((weightsData, weightsRef), axis=0)
@@ -101,7 +106,7 @@ def run_NPLM(ZBT, NGT,  NG_weights, seed=1,
     scale_list=weights_file.split('sigma', 1)[1]                                                                                   
     scale_list=scale_list.split('_patience', 1)[0]                                                                                                               
     scale_list=np.array([float(s) for s in scale_list.split('_')[1:]])*sigma  
-    print(scale_list)
+    # print(scale_list)
     shape_std = np.std(scale_list)
     activation= weights_file.split('act', 1)[1]
     activation=activation.split('_', 1)[0]
@@ -143,7 +148,7 @@ def run_NPLM(ZBT, NGT,  NG_weights, seed=1,
                 NU_N=NUR_N, NUR_N=NUR_N, NU0_N=NU0_N, SIGMA_N=SIGMA_N,
                 correction='SHAPE', shape_dictionary_list=[parNN_list['scale']],
                 BSMarchitecture=BSMarchitecture, BSMweight_clipping=BSMweight_clipping, train_f=True, train_nu=True)
-    print(tau.summary())
+    # print(tau.summary())
 
     tau.compile(loss=imperfect_loss,  optimizer='adam')
 
@@ -172,17 +177,17 @@ def run_NPLM(ZBT, NGT,  NG_weights, seed=1,
 
 
     if plot==True:
-        bins_code = {                                                                                                                                                                                                                                                                         
-            'mass': np.arange(0, 4000, 50
+        # bins_code = {                                                                                                                                                                                                                                                                         
+        #     'mass': np.arange(0, 4000, 50
                             
-                            )                                                                                                                             
-            }  
-        ymax_code = {                                                                                                                                                                                                                                                                       
-            'mass': 5                                                                                                                          
-            }  
-        xlabel_code = {                                                                                                                                                                                                                                                                        
-            'mass': r'$m_{jj}$',                                                                                                                            
-            }  
+        #                     )                                                                                                                             
+        #     }  
+        # ymax_code = {                                                                                                                                                                                                                                                                       
+        #     'mass': 5                                                                                                                          
+        #     }  
+        # xlabel_code = {                                                                                                                                                                                                                                                                        
+        #     'mass': r'$m_{jj}$',                                                                                                                            
+        #     }  
         feature_labels = list(bins_code.keys())
 
         REF    = feature[target[:, 0]==0]
@@ -205,15 +210,15 @@ def run_NPLM(ZBT, NGT,  NG_weights, seed=1,
         output_tau_ref   = tau.predict(REF)
 
 
-        bins_code = {                                                                                                                                                                                                                                                                         
-            'mass': np.arange(0, 4000,40)                                                                                                                             
-            }  
-        ymax_code = {                                                                                                                                                                                                                                                                       
-            'mass': 5                                                                                                                        
-            }  
-        xlabel_code = {                                                                                                                                                                                                                                                                        
-            'mass': r'$m_{jj}$',                                                                                                                            
-            }  
+        # bins_code = {                                                                                                                                                                                                                                                                         
+        #     'mass': np.arange(0, 4000,40)                                                                                                                             
+        #     }  
+        # ymax_code = {                                                                                                                                                                                                                                                                       
+        #     'mass': 5                                                                                                                        
+        #     }  
+        # xlabel_code = {                                                                                                                                                                                                                                                                        
+        #     'mass': r'$m_{jj}$',                                                                                                                            
+        #     }  
         feature_labels = list(bins_code.keys())
 
         plot_reconstruction(df=BSMdf, data=DATA, weight_data=weight_DATA, ref=REF, weight_ref=weight_REF, 
