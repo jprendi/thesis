@@ -1,3 +1,7 @@
+'''
+runs CV for the following models: SciForest, Fair Cut Forest and Robust Random Cut Forest
+'''
+
 from scripts.cross_validation_script_othermodels import Cross_Validation
 import pickle
 import pandas as pd

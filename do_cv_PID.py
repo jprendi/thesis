@@ -1,3 +1,7 @@
+'''
+runs cross validation with the PIDForest model
+'''
+
 from scripts.cross_validation_script_PIDForest import Cross_Validation
 import pickle
 import pandas as pd

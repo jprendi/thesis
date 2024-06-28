@@ -1,3 +1,8 @@
+'''
+
+runs crossvalidation with iForest but with decreased size in input features!
+
+'''
 
 from scripts import cv_reduced
 import pickle
