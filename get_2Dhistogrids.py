@@ -6,25 +6,6 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 
 
-# class do_NPLM_test(): 
-#     def __init__(self, sigkey, 
-#                  model_dir='trained_models/isotree/kfold_models/', 
-#                  model_name='model__ntrees_100__scoring_metric_depth__fold_1_of_5',
-#                  dimass_type='jet', rand=1):
-
-#         sculpts = sculpt_study(model_dir=model_dir, model_name=model_name, signal=sigkey, dimass_type=dimass_type)
-
-#         ZB_Bottom = sculpt_study.select_anomalous_datapoints(sculpts.ZeroBias_anomaly_score, sculpts.ZeroBias_data, area='bottom', percentage=0.95)
-#         NG_Bottom = sculpt_study.select_anomalous_datapoints(sculpts.NuGun_anomaly_score, sculpts.NuGun_data, area='bottom', percentage=0.95)
-
-#         top_ZB = sculpt_study.select_anomalous_datapoints(anomaly_score=sculpts.ZeroBias_anomaly_score, dataset=sculpts.ZeroBias_data, area='top', percentage=0.05)
-#         top_NG = sculpt_study.select_anomalous_datapoints(anomaly_score=sculpts.NuGun_anomaly_score, dataset=sculpts.NuGun_data, area='top', percentage=0.05)
-
-
-# class NPLM_ish():
-#     ### here the thing that prepares NPLM
-
-
     # here the thing that executes it all....
 
 class create_reweight_maps():
@@ -33,22 +14,28 @@ class create_reweight_maps():
                  model_name='model__ntrees_100__scoring_metric_depth__fold_1_of_5',
                  dimass_type='jet'):
 
-        sculpts = sculpt_study(model_dir=model_dir, model_name=model_name, signal=sigkey, dimass_type=dimass_type)
+        self.sculpts = sculpt_study(model_dir=model_dir, model_name=model_name, signal=sigkey, dimass_type=dimass_type, grids=False)
 
-        ZB_Bottom = sculpt_study.select_anomalous_datapoints(sculpts.ZeroBias_anomaly_score, sculpts.ZeroBias_data, area='bottom', percentage=0.95)
-        NG_Bottom = sculpt_study.select_anomalous_datapoints(sculpts.NuGun_anomaly_score, sculpts.NuGun_data, area='bottom', percentage=0.95)
+        self.ZB_Bottom = sculpt_study.select_anomalous_datapoints(self.sculpts.ZeroBias_anomaly_score, self.sculpts.ZeroBias_data, area='bottom', percentage=0.95)
+        self.NG_Bottom = sculpt_study.select_anomalous_datapoints(self.sculpts.NuGun_anomaly_score, self.sculpts.NuGun_data, area='bottom', percentage=0.95)
 
         self.ratio1 = 0
         self.ratio2 = 0
+        
+        if grids:
+            self.get_grids(self.ZB_Bottom, self.NG_Bottom)
 
-        self.get_grids(ZB_Bottom, NG_Bottom)
-     
-        top_ZB_pre = sculpt_study.select_anomalous_datapoints(anomaly_score=sculpts.ZeroBias_anomaly_score, dataset=sculpts.ZeroBias_data, area='top', percentage=0.05)
-        top_NG_pre = sculpt_study.select_anomalous_datapoints(anomaly_score=sculpts.NuGun_anomaly_score, dataset=sculpts.NuGun_data, area='top', percentage=0.05)
+            top_ZB_pre = sculpt_study.select_anomalous_datapoints(anomaly_score=self.sculpts.ZeroBias_anomaly_score, dataset=self.sculpts.ZeroBias_data, area='top', percentage=0.05)
+            top_NG_pre = sculpt_study.select_anomalous_datapoints(anomaly_score=self.sculpts.NuGun_anomaly_score, dataset=self.sculpts.NuGun_data, area='top', percentage=0.05)
+            self.top_NGT = top_NG_pre[(top_NG_pre[:, 63] > 30) & (top_NG_pre[:, 66] > 30)]
+            self.NGT_weights = self.get_weights()
+            self.top_ZBT = top_ZB_pre[(top_ZB_pre[:, 63] > 30) & (top_ZB_pre[:, 66] > 30)]
+        else:
+            top_ZB_pre = sculpt_study.select_anomalous_datapoints(anomaly_score=self.sculpts.ZeroBias_anomaly_score, dataset=self.sculpts.ZeroBias_data, area='top', percentage=0.05)
+            top_NG_pre = sculpt_study.select_anomalous_datapoints(anomaly_score=self.sculpts.NuGun_anomaly_score, dataset=self.sculpts.NuGun_data, area='top', percentage=0.05)
+            self.top_NGT = top_NG_pre
+            self.top_ZBT = top_ZB_pre
 
-        self.top_NGT = top_NG_pre[(top_NG_pre[:, 63] > 30) & (top_NG_pre[:, 66] > 30)]
-        self.NGT_weights = self.get_weights()
-        self.top_ZBT = top_ZB_pre[(top_ZB_pre[:, 63] > 30) & (top_ZB_pre[:, 66] > 30)]
 
 
     def get_weights(self):
@@ -122,10 +109,10 @@ class create_reweight_maps():
 
     def search_right_value(self, datapoint_indices_pT, datapoint_indices_eta, grid, max_value=59):
         counter = datapoint_indices_pT+1
-        print(f"counter before while: {counter}")
+        # print(f"counter before while: {counter}")
         while grid[counter, datapoint_indices_eta] == 0:
-            print(grid[counter, datapoint_indices_eta] == 0)
-            print(f"counter within while {counter}")
+            # print(grid[counter, datapoint_indices_eta] == 0)
+            # print(f"counter within while {counter}")
             if counter == max_value:
                 return max_value
             else:
@@ -138,7 +125,7 @@ class create_reweight_maps():
         datapoint_indices_pT = datapoint_indices[0]
         datapoint_indices_eta = datapoint_indices[1]
         left_value = grid[datapoint_indices_pT-1, datapoint_indices_eta]
-        print(f"pt aentry {datapoint_indices_pT} eta entry {datapoint_indices_eta} in linear impute before search_right_value")
+        # print(f"pt aentry {datapoint_indices_pT} eta entry {datapoint_indices_eta} in linear impute before search_right_value")
         right_value_index = self.search_right_value(datapoint_indices_pT, datapoint_indices_eta, grid)
         right_value = grid[right_value_index, datapoint_indices_eta]
         impute_value = ((left_value+right_value))/2
@@ -151,13 +138,13 @@ class create_reweight_maps():
         for p_T_index in range(1,len(histo[1])-2):
             for eta_index in range(1,(len(histo[2]))-1):
                 if grid_1[p_T_index, eta_index] == 0:
-                    print(f"pt and eta entry is zero: {p_T_index} {eta_index}")
+                    # print(f"pt and eta entry is zero: {p_T_index} {eta_index}")
                     impute_value, to_impute = self.linear_impute((p_T_index, eta_index), grid_1)
-                    print(f"impute value {impute_value}")
+                    # print(f"impute value {impute_value}")
                     for ind in to_impute:
-                        print(ind)
+                        # print(ind)
                         grid_1[ind, eta_index] = impute_value
-                        print(f"imputation {grid_1[ind, eta_index]}, {impute_value}")
+                        # print(f"imputation {grid_1[ind, eta_index]}, {impute_value}")
         return grid_1
 
 
